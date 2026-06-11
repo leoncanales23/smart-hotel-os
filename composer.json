@@ -1,0 +1,83 @@
+{
+    "name": "smart-hotel-group/smart-hotel-os",
+    "description": "SmartHotelOS — Sistema Operativo Hotelero 5 Estrellas · Grupo Smart de Administración",
+    "type": "project",
+    "license": "proprietary",
+    "version": "1.0.0",
+    "keywords": ["hotel", "pms", "hospitality", "housekeeping", "revenue-management", "5-star"],
+    "authors": [
+        {
+            "name": "Smart Hotel Group Dev Team",
+            "email": "dev@smarthotelgroup.com",
+            "homepage": "https://www.smarthotelgroup.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-curl": "*",
+        "ext-gd": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-redis": "*",
+        "ext-zip": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "phpstan/phpstan": "^1.10",
+        "squizlabs/php_codesniffer": "^3.8",
+        "friendsofphp/php-cs-fixer": "^3.40",
+        "mockery/mockery": "^1.6",
+        "fakerphp/faker": "^1.23"
+    },
+    "autoload": {
+        "psr-4": {
+            "SmartHotel\\": "smart-modules/",
+            "SmartHotel\\Api\\": "smart-api/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SmartHotelOS\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test":           "phpunit",
+        "test:coverage":  "phpunit --coverage-html coverage/",
+        "lint":           "phpcs --standard=PSR12 smart-modules/ smart-api/",
+        "lint:fix":       "php-cs-fixer fix smart-modules/ smart-api/",
+        "analyse":        "phpstan analyse smart-modules/ smart-api/ --level=5",
+        "install-smart":  "php scripts/install-smart.php",
+        "seed":           "php scripts/seed-demo-data.php",
+        "post-install-cmd": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "smart-hotel": {
+            "modules": [
+                "smart_notifications",
+                "smart_dashboard",
+                "smart_guestprofile",
+                "smart_ratemanager",
+                "smart_frontdesk",
+                "smart_housekeeping",
+                "smart_maintenance",
+                "smart_restaurant",
+                "smart_spa",
+                "smart_concierge"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

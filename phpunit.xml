@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SmartHotelOS — PHPUnit Configuration
+  Grupo Smart de Administración
+  Ejecutar: vendor/bin/phpunit
+-->
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    displayDetailsOnIncompleteTests="true"
+    displayDetailsOnSkippedTests="true"
+    displayDetailsOnTestsThatTriggerDeprecations="true"
+    displayDetailsOnTestsThatTriggerErrors="true"
+    displayDetailsOnTestsThatTriggerNotices="true"
+    displayDetailsOnTestsThatTriggerWarnings="true"
+    failOnDeprecation="false"
+    failOnEmptyTestSuite="false"
+    failOnIncomplete="false"
+    failOnSkipped="false"
+    failOnWarning="true"
+    cacheDirectory=".phpunit.cache"
+    executionOrder="depends,defects"
+    requireCoverageMetadata="false"
+    beStrictAboutCoverageMetadata="false">
+
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/unit</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/integration</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/feature</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>smart-modules</directory>
+            <directory>smart-api</directory>
+        </include>
+        <exclude>
+            <directory>smart-modules/*/sql</directory>
+            <directory>smart-modules/*/views/templates</directory>
+        </exclude>
+    </source>
+
+    <coverage>
+        <report>
+            <html outputDirectory="coverage/" lowUpperBound="50" highLowerBound="90"/>
+            <clover outputFile="coverage/clover.xml"/>
+            <text outputFile="php://stdout" showOnlySummary="true"/>
+        </report>
+    </coverage>
+
+    <php>
+        <env name="APP_ENV"   value="testing"/>
+        <env name="DB_HOST"   value="127.0.0.1"/>
+        <env name="DB_PORT"   value="3306"/>
+        <env name="DB_NAME"   value="smart_hotel_test"/>
+        <env name="DB_USER"   value="smart_test"/>
+        <env name="DB_PASSWORD" value="smart_test_pass"/>
+        <env name="REDIS_HOST"  value="127.0.0.1"/>
+    </php>
+</phpunit>

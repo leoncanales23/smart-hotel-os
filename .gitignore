@@ -1,0 +1,109 @@
+# ============================================================
+#  SmartHotelOS — .gitignore
+#  Grupo Smart de Administración
+# ============================================================
+
+# ── Entorno y secretos ────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.dev
+.env.production
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# ── Dependencias ──────────────────────────────────────────────
+/vendor/
+/node_modules/
+/.npm/
+
+# ── Core de QloApps (subtree externo, no versionar aquí) ──────
+/core/
+!/core/.gitkeep
+
+# ── Cache y compilados ────────────────────────────────────────
+/cache/
+/var/
+*.cache
+.phpunit.cache/
+/.phpunit.result.cache
+
+# ── Cobertura y reportes de tests ────────────────────────────
+/coverage/
+/coverage-html/
+coverage.xml
+clover.xml
+junit.xml
+*.log
+
+# ── Build assets ─────────────────────────────────────────────
+/smart-themes/smart-luxury/dist/
+/smart-themes/smart-luxury/node_modules/
+*.min.js
+*.min.css
+# Conservar fuentes versionadas:
+!*.woff2
+
+# ── IDEs y editores ───────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Docker ───────────────────────────────────────────────────
+.docker/nginx/ssl/
+docker-compose.override.yml
+
+# ── Uploads y archivos generados por el hotel ─────────────────
+/img/
+/upload/
+/download/
+/log/
+/mnt/
+
+# ── PHP ──────────────────────────────────────────────────────
+*.phpstorm.meta.php
+_ide_helper*.php
+
+# ── Composer ─────────────────────────────────────────────────
+composer.lock
+# Retener composer.json ✓
+
+# ── npm / yarn ────────────────────────────────────────────────
+package-lock.json
+yarn.lock
+
+# ── Backups y temporales ──────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+*.orig
+*.sql.gz
+*.sql.bz2
+
+# ── Archivos de demostración sensibles ───────────────────────
+/scripts/seed-*.sql
+/data/demo/
+
+# ── macOS ────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ── Windows ──────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── Tests locales no comiteados ───────────────────────────────
+/tests/local/
+/tests/scratch/

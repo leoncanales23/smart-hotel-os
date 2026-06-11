@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartHotelOS — Grupo Smart de Administración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #8B6D2C;
+    --onyx: #0A0A0B;
+    --onyx-2: #111114;
+    --onyx-3: #18181C;
+    --onyx-4: #222228;
+    --onyx-5: #2E2E36;
+    --pearl: #F5F1E8;
+    --pearl-dim: #C8C2B0;
+    --smoke: rgba(245,241,232,0.06);
+    --border: rgba(201,168,76,0.18);
+    --border-dim: rgba(201,168,76,0.08);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--onyx);
+    color: var(--pearl);
+    font-family: var(--sans);
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── Custom cursor ── */
+  .cursor {
+    position: fixed; width: 8px; height: 8px;
+    background: var(--gold); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.3s, height 0.3s, opacity 0.3s;
+    mix-blend-mode: normal;
+  }
+  .cursor-ring {
+    position: fixed; width: 36px; height: 36px;
+    border: 1px solid rgba(201,168,76,0.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), width 0.4s, height 0.4s, opacity 0.4s;
+  }
+  .cursor.hover { width: 14px; height: 14px; background: var(--gold-light); }
+  .cursor-ring.hover { width: 56px; height: 56px; border-color: rgba(201,168,76,0.6); }
+
+  /* ── Noise overlay ── */
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 1;
+    opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.75rem 4rem;
+    backdrop-filter: blur(20px) saturate(1.2);
+    background: rgba(10,10,11,0.7);
+    border-bottom: 1px solid var(--border-dim);
+    transition: padding 0.4s;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .nav-logo-mark {
+    width: 36px; height: 36px;
+    border: 1px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 1.1rem; color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+  .nav-logo-text {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .nav-logo-text span:first-child {
+    font-family: var(--serif); font-size: 1.1rem; font-weight: 400;
+    color: var(--pearl); letter-spacing: 0.12em;
+  }
+  .nav-logo-text span:last-child {
+    font-size: 0.6rem; font-weight: 300; letter-spacing: 0.25em;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex; gap: 2.5rem; list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.75rem; font-weight: 400; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--pearl-dim);
+    text-decoration: none; transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-cta {
+    padding: 0.6rem 1.75rem;
+    border: 1px solid var(--gold);
+    font-size: 0.7rem; font-weight: 400; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--gold);
+    background: transparent; cursor: none;
+    transition: background 0.3s, color 0.3s;
+  }
+  .nav-cta:hover { background: var(--gold); color: var(--onyx); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 8rem 4rem 5rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 80% at 20% 80%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      var(--onyx);
+  }
+  .hero-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 80% 80% at 60% 40%, black 20%, transparent 70%);
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 760px; }
+
+  .hero-label {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+  .hero-label-line { width: 40px; height: 1px; background: var(--gold); }
+  .hero-label span {
+    font-size: 0.65rem; font-weight: 400; letter-spacing: 0.35em;
+    text-transform: uppercase; color: var(--gold);
+  }
+
+  .hero h1 {
+    font-family: var(--serif); font-weight: 300;
+    font-size: clamp(3.5rem, 7vw, 6.5rem); line-height: 1.0;
+    color: var(--pearl); letter-spacing: -0.01em;
+    margin-bottom: 0.2rem;
+  }
+  .hero h1 em {
+    font-style: italic; color: var(--gold-light);
+    display: block;
+  }
+  .hero-subtitle {
+    font-size: 1rem; font-weight: 300; color: var(--pearl-dim);
+    line-height: 1.8; max-width: 520px; margin: 2rem 0 3rem;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-actions { display: flex; align-items: center; gap: 2.5rem; }
+  .btn-primary {
+    padding: 1rem 2.5rem;
+    background: var(--gold); color: var(--onyx);
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2em;
+    text-transform: uppercase; border: none; cursor: none;
+    transition: background 0.3s, transform 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-ghost {
+    font-size: 0.75rem; font-weight: 400; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--pearl-dim);
+    border-bottom: 1px solid var(--border); padding-bottom: 2px;
+    text-decoration: none; transition: color 0.3s, border-color 0.3s;
+  }
+  .btn-ghost:hover { color: var(--gold); border-color: var(--gold); }
+
+  /* Stats row */
+  .hero-stats {
+    position: absolute; right: 4rem; top: 50%; transform: translateY(-50%);
+    z-index: 2; display: flex; flex-direction: column; gap: 2rem;
+  }
+  .hero-stat {
+    text-align: right; padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border-dim);
+    background: rgba(10,10,11,0.6);
+    backdrop-filter: blur(10px);
+  }
+  .hero-stat-num {
+    font-family: var(--serif); font-size: 2.2rem; font-weight: 300;
+    color: var(--gold-light); display: block; line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+  .hero-stat-label {
+    font-size: 0.6rem; font-weight: 400; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--pearl-dim);
+  }
+
+  /* Scroll indicator */
+  .scroll-indicator {
+    position: absolute; bottom: 2.5rem; left: 4rem; z-index: 2;
+    display: flex; align-items: center; gap: 1rem;
+    animation: fadeInUp 1s ease 2s both;
+  }
+  .scroll-line {
+    width: 1px; height: 60px; background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  .scroll-text {
+    font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--pearl-dim); writing-mode: vertical-rl;
+  }
+
+  /* ── SECTION COMMON ── */
+  section { position: relative; }
+  .section-inner { padding: 8rem 4rem; max-width: 1400px; margin: 0 auto; }
+
+  .section-label {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 4rem;
+  }
+  .section-label-num {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+  .section-label-line { flex: 1; height: 1px; background: var(--border-dim); }
+  .section-label-text {
+    font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--pearl-dim);
+  }
+
+  h2.section-title {
+    font-family: var(--serif); font-weight: 300;
+    font-size: clamp(2.2rem, 4vw, 3.5rem); line-height: 1.1;
+    color: var(--pearl); margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+  h2.section-title em { font-style: italic; color: var(--gold-light); }
+
+  /* ── SYSTEM OVERVIEW ── */
+  .system-section { background: var(--onyx-2); }
+  .system-intro { max-width: 560px; margin-bottom: 5rem; }
+  .system-intro p {
+    font-size: 1rem; color: var(--pearl-dim); line-height: 1.9; letter-spacing: 0.02em;
+  }
+
+  .system-diagram {
+    display: grid; grid-template-columns: 1fr 2fr 1fr;
+    gap: 1px; background: var(--border-dim);
+    border: 1px solid var(--border-dim); margin-bottom: 2rem;
+  }
+  .diagram-col { background: var(--onyx-2); }
+  .diagram-col-header {
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-dim);
+    font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); font-weight: 400;
+  }
+  .diagram-items { padding: 0.5rem 0; }
+  .diagram-item {
+    padding: 0.75rem 1.5rem; font-size: 0.8rem; color: var(--pearl-dim);
+    border-bottom: 1px solid var(--border-dim); letter-spacing: 0.03em;
+    display: flex; align-items: center; gap: 0.75rem; transition: background 0.2s, color 0.2s;
+  }
+  .diagram-item:hover { background: var(--smoke); color: var(--pearl); }
+  .diagram-item:last-child { border-bottom: none; }
+  .diagram-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--gold); opacity: 0.5; flex-shrink: 0;
+  }
+  .diagram-item.active .diagram-dot { opacity: 1; background: var(--gold-light); }
+  .diagram-item.active { color: var(--pearl); }
+
+  .diagram-center-col { background: var(--onyx-3); }
+  .diagram-core {
+    padding: 2rem; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; min-height: 200px; gap: 1rem;
+  }
+  .diagram-core-title {
+    font-family: var(--serif); font-size: 1.6rem; font-weight: 300;
+    color: var(--pearl); letter-spacing: 0.05em;
+  }
+  .diagram-core-sub {
+    font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); text-align: center;
+  }
+  .diagram-core-ring {
+    width: 80px; height: 80px; border: 1px solid var(--border);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .diagram-core-ring::before {
+    content: ''; position: absolute; inset: 8px;
+    border: 1px solid rgba(201,168,76,0.3); border-radius: 50%;
+  }
+  .diagram-core-ring-text {
+    font-family: var(--serif); font-size: 1.2rem; color: var(--gold);
+  }
+
+  /* ── MODULES ── */
+  .modules-section { background: var(--onyx); }
+  .modules-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--border-dim); border: 1px solid var(--border-dim);
+  }
+  .module-card {
+    background: var(--onyx); padding: 2.5rem;
+    transition: background 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .module-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .module-card:hover { background: var(--onyx-3); }
+  .module-card:hover::before { opacity: 1; }
+
+  .module-icon {
+    width: 44px; height: 44px; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.5rem; transition: border-color 0.3s;
+  }
+  .module-card:hover .module-icon { border-color: var(--gold); }
+  .module-icon svg { width: 20px; height: 20px; stroke: var(--gold); fill: none; stroke-width: 1.2; }
+
+  .module-num {
+    font-family: var(--mono); font-size: 0.65rem; color: var(--gold-dim);
+    letter-spacing: 0.1em; margin-bottom: 0.75rem; display: block;
+  }
+  .module-title {
+    font-family: var(--serif); font-size: 1.4rem; font-weight: 300;
+    color: var(--pearl); margin-bottom: 0.75rem; letter-spacing: 0.02em;
+  }
+  .module-desc {
+    font-size: 0.82rem; color: var(--pearl-dim); line-height: 1.8;
+    margin-bottom: 1.5rem; letter-spacing: 0.02em;
+  }
+  .module-features { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+  .module-features li {
+    font-size: 0.72rem; color: var(--pearl-dim); letter-spacing: 0.04em;
+    display: flex; align-items: flex-start; gap: 0.6rem;
+  }
+  .module-features li::before {
+    content: '—'; color: var(--gold-dim); flex-shrink: 0; margin-top: 1px;
+  }
+  .module-status {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 1.75rem; font-size: 0.62rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--gold); padding: 0.3rem 0.75rem;
+    border: 1px solid rgba(201,168,76,0.25);
+  }
+  .module-status-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
+
+  /* ── STANDARDS ── */
+  .standards-section { background: var(--onyx-2); }
+  .standards-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;
+    margin-top: 4rem;
+  }
+  .standard-card {
+    padding: 2rem; border: 1px solid var(--border-dim);
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .standard-card:hover { border-color: var(--border); transform: translateY(-4px); }
+  .standard-num {
+    font-family: var(--serif); font-size: 3rem; font-weight: 300;
+    color: var(--gold); line-height: 1; margin-bottom: 0.5rem; display: block;
+  }
+  .standard-label {
+    font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--pearl-dim); display: block; margin-bottom: 1rem;
+  }
+  .standard-desc {
+    font-size: 0.8rem; color: rgba(200,194,176,0.7); line-height: 1.7;
+  }
+
+  /* ── ROADMAP ── */
+  .roadmap-section { background: var(--onyx); overflow: hidden; }
+  .roadmap-track {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border-dim);
+    border: 1px solid var(--border-dim); margin-top: 4rem;
+  }
+  .roadmap-phase { background: var(--onyx); padding: 2.5rem 2rem; position: relative; }
+  .roadmap-phase:first-child { background: var(--onyx-3); }
+  .roadmap-phase-label {
+    font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.5rem; display: block;
+  }
+  .roadmap-phase-title {
+    font-family: var(--serif); font-size: 1.2rem; font-weight: 300;
+    color: var(--pearl); margin-bottom: 0.5rem;
+  }
+  .roadmap-phase-weeks {
+    font-size: 0.68rem; color: var(--pearl-dim); letter-spacing: 0.1em;
+    margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-dim);
+  }
+  .roadmap-items { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .roadmap-items li {
+    font-size: 0.75rem; color: var(--pearl-dim); letter-spacing: 0.03em;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .roadmap-items li .check {
+    width: 14px; height: 14px; border: 1px solid var(--border);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+  }
+  .roadmap-phase:first-child .roadmap-items li .check {
+    border-color: var(--gold); background: rgba(201,168,76,0.1);
+    color: var(--gold);
+  }
+
+  /* ── TECH STACK ── */
+  .tech-section { background: var(--onyx-2); }
+  .tech-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px;
+    background: var(--border-dim); border: 1px solid var(--border-dim);
+    margin-top: 4rem;
+  }
+  .tech-item {
+    background: var(--onyx-2); padding: 1.75rem 1.25rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+    transition: background 0.3s;
+  }
+  .tech-item:hover { background: var(--onyx-4); }
+  .tech-logo {
+    width: 36px; height: 36px; opacity: 0.7;
+    transition: opacity 0.3s; filter: grayscale(0.5) sepia(0.3);
+  }
+  .tech-item:hover .tech-logo { opacity: 1; filter: none; }
+  .tech-name {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--pearl-dim); text-align: center;
+  }
+  .tech-version { font-family: var(--mono); font-size: 0.62rem; color: var(--gold-dim); }
+
+  /* ── QUOTE ── */
+  .quote-section {
+    background: var(--onyx-3);
+    padding: 8rem 4rem;
+    text-align: center;
+    border-top: 1px solid var(--border-dim);
+    border-bottom: 1px solid var(--border-dim);
+    position: relative; overflow: hidden;
+  }
+  .quote-section::before {
+    content: '"';
+    position: absolute; top: -2rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--serif); font-size: 20rem; color: rgba(201,168,76,0.04);
+    line-height: 1; pointer-events: none;
+  }
+  .quote-text {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.5rem, 3vw, 2.8rem); font-weight: 300;
+    color: var(--pearl); line-height: 1.4; max-width: 900px;
+    margin: 0 auto 2rem; letter-spacing: 0.01em;
+    position: relative; z-index: 1;
+  }
+  .quote-attr {
+    font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); position: relative; z-index: 1;
+  }
+
+  /* ── CTA ── */
+  .cta-section { background: var(--onyx); padding: 8rem 4rem; }
+  .cta-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6rem;
+    align-items: center; max-width: 1200px; margin: 0 auto;
+  }
+  .cta-left h2 {
+    font-family: var(--serif); font-size: clamp(2.5rem, 4vw, 4rem);
+    font-weight: 300; color: var(--pearl); line-height: 1.1; margin-bottom: 1.5rem;
+  }
+  .cta-left h2 em { font-style: italic; color: var(--gold-light); }
+  .cta-left p {
+    font-size: 0.9rem; color: var(--pearl-dim); line-height: 1.9; letter-spacing: 0.02em;
+  }
+  .cta-right {
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+  .cta-contact-item {
+    display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border-dim); transition: border-color 0.3s;
+  }
+  .cta-contact-item:hover { border-color: var(--border); }
+  .cta-contact-icon {
+    width: 36px; height: 36px; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .cta-contact-icon svg { width: 16px; height: 16px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+  .cta-contact-label { font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); }
+  .cta-contact-val { font-size: 0.85rem; color: var(--pearl); margin-top: 2px; }
+
+  .cta-btn-group { display: flex; gap: 1rem; margin-top: 1rem; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--onyx-2); padding: 3rem 4rem;
+    border-top: 1px solid var(--border-dim);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-logo {
+    font-family: var(--serif); font-size: 1rem; color: var(--pearl);
+    letter-spacing: 0.1em;
+  }
+  .footer-copy {
+    font-size: 0.65rem; color: var(--pearl-dim); letter-spacing: 0.15em;
+  }
+  .footer-links { display: flex; gap: 2rem; }
+  .footer-links a {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--pearl-dim); text-decoration: none; transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50%       { opacity: 0.8; transform: scaleY(1.1); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+
+  .animate-in { opacity: 0; transform: translateY(24px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .animate-in.visible { opacity: 1; transform: translateY(0); }
+
+  .hero-content > * { animation: fadeInUp 1s cubic-bezier(0.16,1,0.3,1) both; }
+  .hero-content > *:nth-child(1) { animation-delay: 0.3s; }
+  .hero-content > *:nth-child(2) { animation-delay: 0.5s; }
+  .hero-content > *:nth-child(3) { animation-delay: 0.7s; }
+  .hero-content > *:nth-child(4) { animation-delay: 0.9s; }
+  .hero-stats { animation: fadeIn 1.4s ease 1.2s both; }
+
+  /* Gold shimmer text */
+  .shimmer {
+    background: linear-gradient(90deg, var(--gold-dim) 0%, var(--gold-light) 40%, var(--gold-dim) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; animation: shimmer 3s linear infinite;
+  }
+
+  /* Decorative separator */
+  .sep {
+    display: flex; align-items: center; gap: 1.5rem;
+    padding: 0 4rem; margin: 0 auto; max-width: 1400px;
+  }
+  .sep-line { flex: 1; height: 1px; background: var(--border-dim); }
+  .sep-diamond {
+    width: 6px; height: 6px; border: 1px solid var(--gold);
+    transform: rotate(45deg);
+  }
+
+  /* Horizontal scroll hint for tech */
+  @media (max-width: 1200px) {
+    .tech-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">SG</div>
+    <div class="nav-logo-text">
+      <span>SmartHotelOS</span>
+      <span>Grupo Smart de Administración</span>
+    </div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#sistema">Sistema</a></li>
+    <li><a href="#modulos">Módulos</a></li>
+    <li><a href="#estandares">Estándares</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <button class="nav-cta">Solicitar Demo</button>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-content">
+    <div class="hero-label">
+      <div class="hero-label-line"></div>
+      <span>Sistema Operativo Hotelero · v1.0</span>
+    </div>
+    <h1>
+      La operación perfecta<br>
+      <em>comienza aquí.</em>
+    </h1>
+    <p class="hero-subtitle">
+      SmartHotelOS es el cerebro digital del Grupo Smart de Administración. 
+      Un sistema operativo completo diseñado para hoteles de cinco estrellas: 
+      desde la reserva hasta el cierre contable, con estándares Forbes en cada proceso.
+    </p>
+    <div class="hero-actions">
+      <a href="#modulos" class="btn-primary">Explorar el sistema</a>
+      <a href="#roadmap" class="btn-ghost">Ver roadmap →</a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-num shimmer">18+</span>
+      <span class="hero-stat-label">Módulos propietarios</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num shimmer">99.95%</span>
+      <span class="hero-stat-label">Uptime objetivo</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num shimmer">5★</span>
+      <span class="hero-stat-label">Estándar Forbes</span>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <div class="scroll-line"></div>
+    <span class="scroll-text">Descubrir</span>
+  </div>
+</section>
+
+<!-- SEP -->
+<div class="sep"><div class="sep-line"></div><div class="sep-diamond"></div><div class="sep-line"></div></div>
+
+<!-- ── SYSTEM OVERVIEW ── -->
+<section class="system-section" id="sistema">
+  <div class="section-inner">
+    <div class="section-label animate-in">
+      <span class="section-label-num">01</span>
+      <div class="section-label-line"></div>
+      <span class="section-label-text">Arquitectura del sistema</span>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:start;">
+      <div>
+        <h2 class="section-title animate-in">Un solo sistema.<br><em>Todo conectado.</em></h2>
+        <div class="system-intro animate-in">
+          <p>Construido sobre QloApps y extendido con módulos propietarios de clase mundial. SmartHotelOS conecta todos los departamentos del hotel en una sola plataforma de verdad, con información en tiempo real y automatización inteligente.</p>
+        </div>
+      </div>
+      <div class="animate-in" style="padding-top:0.5rem;">
+        <div style="display:flex; flex-direction:column; gap:1px; border:1px solid var(--border-dim); background:var(--border-dim);">
+          <div style="background:var(--onyx-3); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:var(--mono); font-size:0.65rem; color:var(--gold); letter-spacing:0.1em;">SMART_HOTEL_OS</span>
+            <span style="font-size:0.6rem; color:var(--pearl-dim); letter-spacing:0.15em;">v1.0.0-alpha</span>
+          </div>
+          <div style="background:var(--onyx-2); padding:1.25rem 1.5rem; border-bottom:1px solid var(--border-dim);">
+            <div style="font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--pearl-dim); margin-bottom:0.75rem;">Base tecnológica</div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <span style="padding:0.25rem 0.75rem; border:1px solid var(--border); font-size:0.65rem; color:var(--pearl-dim);">QloApps Core</span>
+              <span style="padding:0.25rem 0.75rem; border:1px solid var(--border); font-size:0.65rem; color:var(--pearl-dim);">PHP 8.2+</span>
+              <span style="padding:0.25rem 0.75rem; border:1px solid var(--border); font-size:0.65rem; color:var(--pearl-dim);">MySQL 8.0</span>
+              <span style="padding:0.25rem 0.75rem; border:1px solid var(--border); font-size:0.65rem; color:var(--pearl-dim);">Redis</span>
+              <span style="padding:0.25rem 0.75rem; border:1px solid var(--border); font-size:0.65rem; color:var(--pearl-dim);">Vue.js 3</span>
+              <span style="padding:0.25rem 0.75rem; border:1px solid var(--border); font-size:0.65rem; color:var(--pearl-dim);">Docker</span>
+            </div>
+          </div>
+          <div style="background:var(--onyx-2); padding:1.25rem 1.5rem;">
+            <div style="font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--pearl-dim); margin-bottom:0.75rem;">Integraciones activas</div>
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--pearl-dim);">
+                <span>Stripe / MercadoPago</span><span style="color:var(--gold);">Pagos</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--pearl-dim);">
+                <span>Booking.com / Expedia</span><span style="color:var(--gold);">Canales OTA</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--pearl-dim);">
+                <span>WhatsApp Business API</span><span style="color:var(--gold);">Comunicación</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--pearl-dim);">
+                <span>IoT — Cerraduras & A/C</span><span style="color:var(--gold);">Automatización</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Diagram -->
+    <div class="system-diagram animate-in" style="margin-top:5rem;">
+      <div class="diagram-col">
+        <div class="diagram-col-header">Huésped / Digital</div>
+        <div class="diagram-items">
+          <div class="diagram-item active"><div class="diagram-dot"></div>Web Booking Engine</div>
+          <div class="diagram-item active"><div class="diagram-dot"></div>App Móvil Staff</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>Kiosko Auto Check-in</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>WhatsApp Bot</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>Concierge Digital</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>Llave Móvil IoT</div>
+        </div>
+      </div>
+      <div class="diagram-col diagram-center-col">
+        <div class="diagram-col-header" style="text-align:center;">SmartHotelOS Core · PMS Central</div>
+        <div class="diagram-core">
+          <div class="diagram-core-ring">
+            <span class="diagram-core-ring-text">SG</span>
+          </div>
+          <div class="diagram-core-title">Grupo Smart</div>
+          <div class="diagram-core-sub">Sistema Operativo Hotelero · 5 Estrellas</div>
+          <div style="display:flex; gap:2rem; margin-top:0.5rem;">
+            <span style="font-size:0.65rem; color:var(--pearl-dim); letter-spacing:0.1em;">API REST</span>
+            <span style="font-family:var(--mono); font-size:0.65rem; color:var(--gold-dim);">·</span>
+            <span style="font-size:0.65rem; color:var(--pearl-dim); letter-spacing:0.1em;">WebSocket RT</span>
+            <span style="font-family:var(--mono); font-size:0.65rem; color:var(--gold-dim);">·</span>
+            <span style="font-size:0.65rem; color:var(--pearl-dim); letter-spacing:0.1em;">Multi-Property</span>
+          </div>
+        </div>
+      </div>
+      <div class="diagram-col">
+        <div class="diagram-col-header">Operaciones / Admin</div>
+        <div class="diagram-items">
+          <div class="diagram-item active"><div class="diagram-dot"></div>Front Desk Digital</div>
+          <div class="diagram-item active"><div class="diagram-dot"></div>Housekeeping RT</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>Revenue Manager</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>F&B / Restaurante</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>Spa & Wellness</div>
+          <div class="diagram-item"><div class="diagram-dot"></div>Dashboard Ejecutivo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEP -->
+<div class="sep"><div class="sep-line"></div><div class="sep-diamond"></div><div class="sep-line"></div></div>
+
+<!-- ── MODULES ── -->
+<section class="modules-section" id="modulos">
+  <div class="section-inner">
+    <div class="section-label animate-in">
+      <span class="section-label-num">02</span>
+      <div class="section-label-line"></div>
+      <span class="section-label-text">Módulos del sistema</span>
+    </div>
+    <h2 class="section-title animate-in" style="margin-bottom:3rem;">Cada departamento,<br><em>perfectamente orquestado.</em></h2>
+  </div>
+
+  <div style="padding:0 4rem; max-width:1400px; margin:0 auto;">
+    <div class="modules-grid animate-in">
+
+      <!-- Front Desk -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 11h8M8 15h5"/></svg>
+        </div>
+        <span class="module-num">M-01</span>
+        <div class="module-title">Smart Front Desk</div>
+        <p class="module-desc">Check-in y check-out digital con asignación automática de habitaciones, llave móvil y comunicación instantánea con el huésped.</p>
+        <ul class="module-features">
+          <li>Check-in digital en menos de 3 minutos</li>
+          <li>Asignación inteligente de habitaciones</li>
+          <li>Llaves digitales QR / NFC</li>
+          <li>Pre check-in 24h antes de llegada</li>
+          <li>Notas de turno para recepción</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>En desarrollo</div>
+      </div>
+
+      <!-- Housekeeping -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="module-num">M-02</span>
+        <div class="module-title">Smart Housekeeping</div>
+        <p class="module-desc">Panel de pisos en tiempo real, asignación automática de camareras, inspecciones, objetos perdidos y KPIs de productividad.</p>
+        <ul class="module-features">
+          <li>Estado de habitaciones en tiempo real</li>
+          <li>Plan diario de limpieza automático</li>
+          <li>App móvil para camareras</li>
+          <li>Inspección fotográfica con checklist</li>
+          <li>Gestión de objetos encontrados</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>En desarrollo</div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <span class="module-num">M-03</span>
+        <div class="module-title">Smart Revenue Manager</div>
+        <p class="module-desc">Gestión dinámica de tarifas con yield management automático, control de canales OTA y optimización de RevPAR en tiempo real.</p>
+        <ul class="module-features">
+          <li>Tarifas dinámicas por demanda</li>
+          <li>Channel manager Booking / Expedia</li>
+          <li>Control de overbooking inteligente</li>
+          <li>Paquetes y upselling automático</li>
+          <li>Forecast de ingresos con IA</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>Planificado — Fase 2</div>
+      </div>
+
+      <!-- Guest Profile -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <span class="module-num">M-04</span>
+        <div class="module-title">Smart Guest Profile</div>
+        <p class="module-desc">CRM de huéspedes 360°: historial de estancias, preferencias, alergias, celebraciones y perfil de comportamiento para personalizar cada experiencia.</p>
+        <ul class="module-features">
+          <li>Perfil unificado por huésped</li>
+          <li>Historial completo de estancias</li>
+          <li>Preferencias y alergias</li>
+          <li>Segmentación y etiquetas VIP</li>
+          <li>Comunicación personalizada</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>Planificado — Fase 2</div>
+      </div>
+
+      <!-- F&B -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <span class="module-num">M-05</span>
+        <div class="module-title">Smart F&B</div>
+        <p class="module-desc">POS completo para restaurante, bar y servicio a la habitación. Control de mesas, comanda digital, minibar automatizado y gestión de banquetes.</p>
+        <ul class="module-features">
+          <li>POS restaurante con gestión de mesas</li>
+          <li>Servicio a la habitación 24h</li>
+          <li>Control de minibar con IoT</li>
+          <li>Gestión de eventos y banquetes</li>
+          <li>Cargos automáticos a la habitación</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>Planificado — Fase 3</div>
+      </div>
+
+      <!-- Spa -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="module-num">M-06</span>
+        <div class="module-title">Smart Spa & Wellness</div>
+        <p class="module-desc">Reservas de spa y tratamientos, gestión de terapeutas, control de agenda y venta de paquetes wellness integrados con la reserva del hotel.</p>
+        <ul class="module-features">
+          <li>Reservas online de tratamientos</li>
+          <li>Gestión de terapeutas y salas</li>
+          <li>Paquetes wellness integrados</li>
+          <li>Control de gimnasio y accesos</li>
+          <li>Actividades y tours</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>Planificado — Fase 3</div>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <span class="module-num">M-07</span>
+        <div class="module-title">Smart Dashboard Ejecutivo</div>
+        <p class="module-desc">KPIs en tiempo real para dirección: ocupación, RevPAR, ADR, ingresos por departamento, NPS y alertas operacionales críticas.</p>
+        <ul class="module-features">
+          <li>RevPAR / ADR / Ocupación RT</li>
+          <li>Ingresos por departamento</li>
+          <li>NPS y satisfacción del huésped</li>
+          <li>Alertas y umbrales configurables</li>
+          <li>Multi-propiedad Grupo Smart</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>En desarrollo</div>
+      </div>
+
+      <!-- Maintenance -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <span class="module-num">M-08</span>
+        <div class="module-title">Smart Maintenance</div>
+        <p class="module-desc">Mantenimiento preventivo y correctivo. Órdenes de trabajo digitales, seguimiento en tiempo real y control de inventario de insumos técnicos.</p>
+        <ul class="module-features">
+          <li>Órdenes de trabajo digitales</li>
+          <li>Mantenimiento preventivo programado</li>
+          <li>Tickets desde cualquier departamento</li>
+          <li>SLA y tiempo de respuesta</li>
+          <li>Historial por activo / habitación</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>Planificado — Fase 2</div>
+      </div>
+
+      <!-- Concierge -->
+      <div class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="module-num">M-09</span>
+        <div class="module-title">Smart Concierge</div>
+        <p class="module-desc">Asistente digital de conserjería vía WhatsApp y app. Reservas de restaurantes, transfers, actividades y peticiones especiales sin llamadas.</p>
+        <ul class="module-features">
+          <li>Bot WhatsApp 24/7 para huéspedes</li>
+          <li>Reservas de actividades externas</li>
+          <li>Solicitudes de servicio en tiempo real</li>
+          <li>Comunicación multiidioma</li>
+          <li>Integración con agenda del hotel</li>
+        </ul>
+        <div class="module-status"><div class="module-status-dot"></div>Planificado — Fase 4</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SEP -->
+<div class="sep" style="margin-top:0; background:var(--onyx);"><div class="sep-line"></div><div class="sep-diamond"></div><div class="sep-line"></div></div>
+
+<!-- ── STANDARDS ── -->
+<section class="standards-section" id="estandares">
+  <div class="section-inner">
+    <div class="section-label animate-in">
+      <span class="section-label-num">03</span>
+      <div class="section-label-line"></div>
+      <span class="section-label-text">Estándares de calidad</span>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:start;">
+      <div>
+        <h2 class="section-title animate-in">Diseñado para <em>la excelencia.</em></h2>
+        <p class="animate-in" style="font-size:0.9rem; color:var(--pearl-dim); line-height:1.9; letter-spacing:0.02em; max-width:420px;">Cada módulo cumple los criterios operacionales de las guías Forbes Travel Guide y Leading Hotels of the World. No es solo software — es el estándar que sus huéspedes esperan, digitalizado.</p>
+      </div>
+      <div class="animate-in" style="display:flex; flex-direction:column; gap:1.5rem;">
+        <div style="display:flex; gap:1.5rem; padding:1.5rem; border:1px solid var(--border-dim);">
+          <div style="font-family:var(--serif); font-size:2.5rem; color:var(--gold); line-height:1; flex-shrink:0;">5★</div>
+          <div>
+            <div style="font-size:0.75rem; font-weight:400; color:var(--pearl); margin-bottom:0.3rem; letter-spacing:0.05em;">Forbes Travel Guide</div>
+            <div style="font-size:0.8rem; color:var(--pearl-dim); line-height:1.7;">Criterios de servicio y tecnología para hoteles Five-Star. Cada proceso diseñado desde el estándar Forbes.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:1.5rem; padding:1.5rem; border:1px solid var(--border-dim);">
+          <div style="font-family:var(--serif); font-size:2.5rem; color:var(--gold); line-height:1; flex-shrink:0;">LHW</div>
+          <div>
+            <div style="font-size:0.75rem; font-weight:400; color:var(--pearl); margin-bottom:0.3rem; letter-spacing:0.05em;">Leading Hotels of the World</div>
+            <div style="font-size:0.8rem; color:var(--pearl-dim); line-height:1.7;">Experiencia del huésped sin fricciones, personalización y discreción en cada interacción digital.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:1.5rem; padding:1.5rem; border:1px solid var(--border-dim);">
+          <div style="font-family:var(--serif); font-size:2.5rem; color:var(--gold); line-height:1; flex-shrink:0;">PCI</div>
+          <div>
+            <div style="font-size:0.75rem; font-weight:400; color:var(--pearl); margin-bottom:0.3rem; letter-spacing:0.05em;">PCI DSS Level 1 + GDPR</div>
+            <div style="font-size:0.8rem; color:var(--pearl-dim); line-height:1.7;">Seguridad en pagos, cifrado de datos de huéspedes y cumplimiento de ley de datos Chile.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="standards-grid animate-in">
+      <div class="standard-card">
+        <span class="standard-num">99.95</span>
+        <span class="standard-label">% Uptime objetivo</span>
+        <p class="standard-desc">Alta disponibilidad con arquitectura redundante. El sistema nunca duerme, como sus huéspedes merecen.</p>
+      </div>
+      <div class="standard-card">
+        <span class="standard-num">&lt;200</span>
+        <span class="standard-label">ms respuesta API</span>
+        <p class="standard-desc">Velocidad de respuesta en el percentil 95 para todas las operaciones críticas del hotel.</p>
+      </div>
+      <div class="standard-card">
+        <span class="standard-num">&lt;3</span>
+        <span class="standard-label">min check-in digital</span>
+        <p class="standard-desc">El huésped completa su check-in completo en menos de tres minutos, sin colas ni formularios en papel.</p>
+      </div>
+      <div class="standard-card">
+        <span class="standard-num">72+</span>
+        <span class="standard-label">NPS tecnología</span>
+        <p class="standard-desc">Índice de promotores netos objetivo para la experiencia digital del huésped. Excelencia medida.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── QUOTE ── -->
+<div class="quote-section animate-in">
+  <p class="quote-text">
+    "La tecnología de lujo no se siente como tecnología. Se siente como ser recordado, anticipado, y comprendido."
+  </p>
+  <span class="quote-attr">SmartHotelOS · Filosofía de diseño · Grupo Smart</span>
+</div>
+
+<!-- ── ROADMAP ── -->
+<section class="roadmap-section" id="roadmap">
+  <div class="section-inner">
+    <div class="section-label animate-in">
+      <span class="section-label-num">04</span>
+      <div class="section-label-line"></div>
+      <span class="section-label-text">Roadmap de desarrollo</span>
+    </div>
+    <h2 class="section-title animate-in">24 semanas hacia<br><em>la operación perfecta.</em></h2>
+
+    <div class="roadmap-track animate-in">
+      <div class="roadmap-phase">
+        <span class="roadmap-phase-label">Fase 1 · En curso</span>
+        <div class="roadmap-phase-title">MVP Core</div>
+        <div class="roadmap-phase-weeks">Semanas 1 — 6</div>
+        <ul class="roadmap-items">
+          <li><span class="check">✓</span>Setup infraestructura Docker</li>
+          <li><span class="check">✓</span>Base QloApps integrada</li>
+          <li><span class="check">·</span>Front Desk digital</li>
+          <li><span class="check">·</span>Housekeeping RT</li>
+          <li><span class="check">·</span>Dashboard KPIs básicos</li>
+          <li><span class="check">·</span>Tema premium inicial</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <span class="roadmap-phase-label">Fase 2</span>
+        <div class="roadmap-phase-title">Revenue & Guest</div>
+        <div class="roadmap-phase-weeks">Semanas 7 — 12</div>
+        <ul class="roadmap-items">
+          <li><span class="check"> </span>CRM de huéspedes 360°</li>
+          <li><span class="check"> </span>Gestión dinámica de tarifas</li>
+          <li><span class="check"> </span>Channel manager OTA</li>
+          <li><span class="check"> </span>Bot WhatsApp huéspedes</li>
+          <li><span class="check"> </span>App PWA para staff</li>
+          <li><span class="check"> </span>Módulo mantenimiento</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <span class="roadmap-phase-label">Fase 3</span>
+        <div class="roadmap-phase-title">F&B & Spa</div>
+        <div class="roadmap-phase-weeks">Semanas 13 — 18</div>
+        <ul class="roadmap-items">
+          <li><span class="check"> </span>POS restaurante completo</li>
+          <li><span class="check"> </span>Reservas spa & wellness</li>
+          <li><span class="check"> </span>Servicio a la habitación</li>
+          <li><span class="check"> </span>Control minibar IoT</li>
+          <li><span class="check"> </span>Gestión de eventos</li>
+          <li><span class="check"> </span>Cargos integrados a folio</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <span class="roadmap-phase-label">Fase 4</span>
+        <div class="roadmap-phase-title">IA & Scale</div>
+        <div class="roadmap-phase-weeks">Semanas 19 — 24</div>
+        <ul class="roadmap-items">
+          <li><span class="check"> </span>Forecast de ocupación IA</li>
+          <li><span class="check"> </span>Integración IoT completa</li>
+          <li><span class="check"> </span>Multi-propiedad activa</li>
+          <li><span class="check"> </span>Reportería ejecutiva avanzada</li>
+          <li><span class="check"> </span>Concierge digital AI</li>
+          <li><span class="check"> </span>Certificación PCI Level 1</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEP -->
+<div class="sep" style="background:var(--onyx);"><div class="sep-line"></div><div class="sep-diamond"></div><div class="sep-line"></div></div>
+
+<!-- ── TECH STACK ── -->
+<section class="tech-section">
+  <div class="section-inner">
+    <div class="section-label animate-in">
+      <span class="section-label-num">05</span>
+      <div class="section-label-line"></div>
+      <span class="section-label-text">Stack tecnológico</span>
+    </div>
+    <h2 class="section-title animate-in" style="margin-bottom:0;">Tecnología de <em>clase mundial.</em></h2>
+
+    <div class="tech-grid animate-in">
+      <div class="tech-item">
+        <svg class="tech-logo" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#C9A84C" stroke-width="1"/><text x="16" y="21" text-anchor="middle" font-size="11" fill="#C9A84C" font-family="monospace">PHP</text>
+        </svg>
+        <span class="tech-name">PHP</span><span class="tech-version">8.2+</span>
+      </div>
+      <div class="tech-item">
+        <svg class="tech-logo" viewBox="0 0 32 32" fill="none">
+          <rect x="4" y="4" width="24" height="24" rx="2" stroke="#C9A84C" stroke-width="1"/><text x="16" y="21" text-anchor="middle" font-size="7" fill="#C9A84C" font-family="monospace">MySQL</text>
+        </svg>
+        <span class="tech-name">MySQL</span><span class="tech-version">8.0+</span>
+      </div>
+      <div class="tech-item">
+        <svg class="tech-logo" viewBox="0 0 32 32" fill="none">
+          <polygon points="16,3 29,28 3,28" stroke="#C9A84C" stroke-width="1" fill="none"/><text x="16" y="24" text-anchor="middle" font-size="7" fill="#C9A84C" font-family="monospace">Vue</text>
+        </svg>
+        <span class="tech-name">Vue.js</span><span class="tech-version">3.x</span>
+      </div>
+      <div class="tech-item">
+        <svg class="tech-logo" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="13" stroke="#C9A84C" stroke-width="1"/><circle cx="16" cy="16" r="5" stroke="#C9A84C" stroke-width="1"/><text x="16" y="20" text-anchor="middle" font-size="5" fill="#C9A84C" font-family="monospace">Redis</text>
+        </svg>
+        <span class="tech-name">Redis</span><span class="tech-version">7.2</span>
+      </div>
+      <div class="tech-item">
+        <svg class="tech-logo" viewBox="0 0 32 32" fill="none">
+          <rect x="2" y="8" width="28" height="16" rx="2" stroke="#C9A84C" stroke-width="1"/><text x="16" y="20" text-anchor="middle" font-size="7" fill="#C9A84C" font-family="monospace">Docker</text>
+        </svg>
+        <span class="tech-name">Docker</span><span class="tech-version">4.x</span>
+      </div>
+      <div class="tech-item">
+        <svg class="tech-logo" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4 L28 10 L28 22 L16 28 L4 22 L4 10 Z" stroke="#C9A84C" stroke-width="1" fill="none"/><text x="16" y="20" text-anchor="middle" font-size="5.5" fill="#C9A84C" font-family="monospace">Nginx</text>
+        </svg>
+        <span class="tech-name">Nginx</span><span class="tech-version">1.25</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section" id="contacto">
+  <div class="cta-inner">
+    <div class="cta-left animate-in">
+      <h2>¿Listo para<br><em>comenzar?</em></h2>
+      <p style="margin-bottom:2.5rem;">SmartHotelOS está en desarrollo activo para el Grupo Smart de Administración. Solicite una demostración del sistema o únase al equipo de desarrollo.</p>
+      <div class="cta-btn-group">
+        <a href="#" class="btn-primary">Solicitar demo</a>
+        <a href="https://github.com/smart-group/smart-hotel-os" class="btn-ghost" style="display:inline-flex; align-items:center; gap:0.5rem;">Ver repositorio →</a>
+      </div>
+    </div>
+    <div class="cta-right animate-in">
+      <div class="cta-contact-item">
+        <div class="cta-contact-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.58 3.44 2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div>
+          <div class="cta-contact-label">Grupo Smart</div>
+          <div class="cta-contact-val">@gruposmart.cl</div>
+        </div>
+      </div>
+      <div class="cta-contact-item">
+        <div class="cta-contact-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        </div>
+        <div>
+          <div class="cta-contact-label">Repositorio GitHub</div>
+          <div class="cta-contact-val">smart-group / smart-hotel-os</div>
+        </div>
+      </div>
+      <div class="cta-contact-item">
+        <div class="cta-contact-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="cta-contact-label">Estado del proyecto</div>
+          <div class="cta-contact-val" style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="width:7px; height:7px; border-radius:50%; background:var(--gold); display:inline-block;"></span>
+            Fase 1 en desarrollo activo
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo">SmartHotelOS</div>
+  <div class="footer-links">
+    <a href="#">GitHub</a>
+    <a href="#">Documentación</a>
+    <a href="#">CHANGELOG</a>
+    <a href="#">Arquitectura</a>
+  </div>
+  <div class="footer-copy">© 2026 Grupo Smart de Administración · Todos los derechos reservados</div>
+</footer>
+
+<script>
+  // ── Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    ring.style.left   = rx + 'px'; ring.style.top  = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+  document.querySelectorAll('a, button, .module-card, .standard-card, .cta-contact-item').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); ring.classList.add('hover'); });
+    el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); ring.classList.remove('hover'); });
+  });
+
+  // ── Scroll animations
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), 0);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+
+  // ── Nav shrink on scroll
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) nav.style.padding = '1rem 4rem';
+    else nav.style.padding = '1.75rem 4rem';
+  }, { passive: true });
+
+  // ── Staggered module cards
+  const cards = document.querySelectorAll('.module-card');
+  const cardObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = [...cards].indexOf(e.target);
+        setTimeout(() => {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }, (idx % 3) * 100);
+        cardObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  cards.forEach(c => {
+    c.style.opacity = '0'; c.style.transform = 'translateY(20px)';
+    c.style.transition = 'opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), background 0.3s';
+    cardObs.observe(c);
+  });
+
+  // ── Hero counter animation
+  function animateNumber(el, target, suffix, duration) {
+    const start = performance.now();
+    const isFloat = target % 1 !== 0;
+    function step(ts) {
+      const p = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 4);
+      const val = isFloat ? (target * ease).toFixed(2) : Math.round(target * ease);
+      el.textContent = val + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+</script>
+</body>
+</html>
