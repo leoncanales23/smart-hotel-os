@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head>
+<body>
+<title>Hotel Smart Santiago</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+[hidden]{display:none!important}
+/* Layout: una sola página con 3 vistas por hash — #hotel (vitrina pública), #pase (ticket del huésped), #recepcion (panel del hotel). */
+:root {
+  --bg: #F3F5F7;          /* nieve de cordillera */
+  --surface: #FFFFFF;
+  --ink: #17202B;         /* granito */
+  --muted: #5B6675;
+  --line: #D9DEE5;
+  --accent: #1E4F7A;      /* azul cordillera */
+  --accent-ink: #FFFFFF;
+  --copper: #A85A2E;      /* cobre chileno, sólo para ofertas */
+  --ok: #1F7A4D; --ok-bg: #E3F3EA;
+  --warn: #8A5B00; --warn-bg: #FBF0D6;
+  --bad: #A3302A; --bad-bg: #F8E2E0;
+  --info-bg: #E2ECF6;
+  --hero-a: #1B2B3D; --hero-b: #2E4A66;
+  --f-display: "Young Serif", Georgia, "Times New Roman", serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0F151C; --surface: #18212B; --ink: #E8EDF2; --muted: #9AA6B4; --line: #2A3644;
+  --accent: #7FB3E0; --accent-ink: #0F151C; --copper: #E09566;
+  --ok: #6FD39E; --ok-bg: #143224; --warn: #F0C46A; --warn-bg: #3A2D0F; --bad: #F08C84; --bad-bg: #3D1916; --info-bg: #1B2E42;
+  --hero-a: #0B1118; --hero-b: #1A2B3D; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0F151C; --surface: #18212B; --ink: #E8EDF2; --muted: #9AA6B4; --line: #2A3644;
+  --accent: #7FB3E0; --accent-ink: #0F151C; --copper: #E09566;
+  --ok: #6FD39E; --ok-bg: #143224; --warn: #F0C46A; --warn-bg: #3A2D0F; --bad: #F08C84; --bad-bg: #3D1916; --info-bg: #1B2E42;
+  --hero-a: #0B1118; --hero-b: #1A2B3D; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); margin: 0; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 400; text-wrap: balance; margin: 0; line-height: 1.15; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.2rem; }
+p { margin: 0; }
+.mono { font-family: var(--f-mono); }
+.eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.num { font-variant-numeric: tabular-nums; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* top bar */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand-mark { width: 34px; height: 34px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--f-display); font-size: 1.05rem; }
+.brand b { font-family: var(--f-display); font-weight: 400; font-size: 1.1rem; display: block; line-height: 1.1; }
+.brand small { color: var(--muted); font-size: .75rem; }
+.tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 10px; border: 1px solid var(--line); }
+.tabs a { text-decoration: none; color: var(--muted); padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: .88rem; }
+.tabs a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.demo-flag { font-size: .75rem; color: var(--warn); background: var(--warn-bg); padding: 3px 9px; border-radius: 99px; font-weight: 600; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid transparent; border-radius: 9px; padding: 9px 16px; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--accent-ink); text-decoration: none; }
+.btn:hover { filter: brightness(1.08); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; filter: none; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.ok { background: var(--ok); color: var(--surface); }
+.btn.bad { background: transparent; color: var(--bad); border-color: currentColor; }
+.btn.sm { padding: 6px 11px; font-size: .85rem; border-radius: 7px; }
+
+/* HOTEL — vitrina */
+.hero { background: linear-gradient(160deg, var(--hero-a), var(--hero-b)); color: #F3F5F7; position: relative; overflow: hidden; }
+.hero .wrap { padding-block: 56px 64px; display: grid; gap: 18px; position: relative; z-index: 1; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 16ch; }
+.hero p { max-width: 54ch; color: #C9D3DE; font-size: 1.05rem; }
+.hero .eyebrow { color: #A9C2DA; }
+.hero-meta { display: flex; gap: 22px; flex-wrap: wrap; color: #C9D3DE; font-size: .9rem; }
+.hero-meta span b { color: #FFFFFF; font-weight: 600; }
+.hero svg.andes { position: absolute; left: 0; right: 0; bottom: -2px; width: 100%; height: 110px; }
+.hero .btn { background: #F3F5F7; color: #17202B; justify-self: start; }
+
+section.block { padding-block: 48px; }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+.sec-head p { color: var(--muted); max-width: 56ch; }
+
+.offers { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.offer { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 12px; grid-template-rows: auto auto 1fr auto auto; }
+.offer .tag { justify-self: start; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--copper); }
+.offer p { color: var(--muted); font-size: .93rem; }
+.offer ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: .9rem; }
+.price { display: flex; align-items: baseline; gap: 6px; }
+.price b { font-family: var(--f-display); font-weight: 400; font-size: 1.6rem; }
+.price small { color: var(--muted); }
+.cupo-bar { display: grid; gap: 6px; font-size: .82rem; color: var(--muted); }
+.meter { height: 6px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.meter i { display: block; height: 100%; background: var(--accent); }
+.meter i.low { background: var(--copper); }
+
+.trust { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); overflow: hidden; }
+.trust div { padding: 18px 20px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; gap: 6px; margin: 0 -1px -1px 0; }
+.trust b { font-weight: 700; }
+.trust p { color: var(--muted); font-size: .9rem; }
+
+/* modal reserva */
+.sheet-bg { position: fixed; inset: 0; background: rgba(10,15,22,.55); z-index: 20; display: grid; place-items: center; padding: 16px; }
+.sheet { background: var(--surface); border-radius: 16px; width: min(480px, 100%); max-height: 92vh; overflow: auto; padding: 22px; display: grid; gap: 14px; border: 1px solid var(--line); }
+.field { display: grid; gap: 5px; }
+.field label { font-size: .82rem; font-weight: 600; color: var(--muted); }
+.field input, .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.err { color: var(--bad); font-size: .85rem; min-height: 1.2em; }
+.summary { background: var(--bg); border-radius: 10px; padding: 12px 14px; font-size: .9rem; display: grid; gap: 4px; }
+.summary div { display: flex; justify-content: space-between; gap: 10px; }
+
+/* PASE */
+.pass-wrap { padding-block: 36px 56px; display: grid; gap: 20px; justify-items: center; }
+.pass { width: min(420px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.pass-head { background: var(--accent); color: var(--accent-ink); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+.pass-head b { font-family: var(--f-display); font-weight: 400; font-size: 1.15rem; }
+.pass-body { padding: 20px; display: grid; gap: 14px; }
+.qr { background: #FFFFFF; border-radius: 12px; padding: 12px; justify-self: center; width: 220px; max-width: 100%; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid var(--line); }
+.qr img, .qr svg { width: 100%; height: auto; display: block; }
+.pass dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: .9rem; }
+.pass dt { color: var(--muted); }
+.pass dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.perf { border-top: 2px dashed var(--line); margin: 0 -20px; }
+.code-box { display: flex; gap: 8px; align-items: center; background: var(--bg); border-radius: 9px; padding: 8px 10px; min-width: 0; }
+.code-box code { font-family: var(--f-mono); font-size: .74rem; overflow-wrap: anywhere; flex: 1; min-width: 0; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-size: .78rem; font-weight: 700; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.st-emitido { color: var(--accent); background: var(--info-bg); }
+.st-dentro { color: var(--ok); background: var(--ok-bg); }
+.st-salido { color: var(--muted); background: var(--bg); }
+.st-anulado { color: var(--bad); background: var(--bad-bg); }
+
+/* RECEPCIÓN */
+.gate { padding-block: 64px; display: grid; justify-items: center; }
+.gate form { width: min(360px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: grid; gap: 14px; }
+.gate .hint { font-size: .85rem; color: var(--muted); }
+.panel { padding-block: 26px 56px; display: grid; gap: 22px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.kpi b { font-family: var(--f-display); font-weight: 400; font-size: 1.9rem; }
+.kpi span { color: var(--muted); font-size: .85rem; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.scan-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.scan-row input { flex: 1 1 220px; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); font-family: var(--f-mono); font-size: .8rem; }
+.file-btn { position: relative; overflow: hidden; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.verdict { border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; border: 1px solid var(--line); }
+.verdict.good { background: var(--ok-bg); border-color: transparent; }
+.verdict.badv { background: var(--bad-bg); border-color: transparent; }
+.verdict .vt { font-weight: 700; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.verdict.good .vt { color: var(--ok); }
+.verdict.badv .vt { color: var(--bad); }
+.verdict .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.checks { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: .86rem; }
+.checks li::before { content: "✓ "; color: var(--ok); font-weight: 700; }
+.checks li.no::before { content: "✕ "; color: var(--bad); }
+
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+th { text-align: left; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+td .sub { color: var(--muted); font-size: .8rem; }
+td.act { white-space: nowrap; text-align: right; }
+
+.cupo-list { display: grid; gap: 10px; }
+.cupo-item { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.cupo-item:last-child { border-bottom: 0; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stepper button { border: 0; background: var(--bg); width: 30px; height: 30px; cursor: pointer; font-weight: 700; }
+.stepper span { min-width: 40px; text-align: center; font-weight: 700; }
+.new-offer { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: end; }
+.new-offer input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+
+.log { display: grid; gap: 0; max-height: 340px; overflow: auto; font-size: .84rem; }
+.log div { display: grid; grid-template-columns: 72px 1fr auto; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.log time { white-space: nowrap; color: var(--muted); font-family: var(--f-mono); font-size: .76rem; }
+.log code { font-family: var(--f-mono); font-size: .7rem; color: var(--muted); }
+.chain-ok { color: var(--ok); font-weight: 700; font-size: .85rem; }
+.chain-bad { color: var(--bad); font-weight: 700; font-size: .85rem; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-weight: 600; z-index: 30; max-width: calc(100% - 32px); }
+footer { border-top: 1px solid var(--line); padding-block: 22px; color: var(--muted); font-size: .85rem; }
+footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.linkbtn { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; font-weight: 600; text-decoration: underline; }
+
+@media (max-width: 860px) {
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+  .new-offer { grid-template-columns: 1fr 1fr; }
+  .new-offer .full { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } .tabs a { padding: 6px 9px; } }
+@media (prefers-reduced-motion: no-preference) { .verdict, .sheet { animation: pop .18s ease-out; } @keyframes pop { from { transform: translateY(6px); opacity: .6; } } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#hotel"><span class="brand-mark">S</span><span><b>Hotel Smart Santiago</b><small>SmartHotelOS · Av. Providencia 1234</small></span></a>
+    <nav class="tabs" aria-label="Vistas">
+      <a href="#hotel" data-v="hotel">Vitrina</a>
+      <a href="#pase" data-v="pase">Mi pase</a>
+      <a href="#recepcion" data-v="recepcion">Recepción</a>
+    </nav>
+    <span class="demo-flag">Modo demo</span>
+  </div>
+</header>
+
+<main>
+  <!-- VITRINA PÚBLICA -->
+  <div id="v-hotel">
+    <section class="hero">
+      <div class="wrap">
+        <span class="eyebrow">Providencia · Santiago de Chile · 5 estrellas</span>
+        <h1>Despierta frente a la cordillera.</h1>
+        <p>Reserva directo con el hotel, elige una de nuestras ofertas con cupo garantizado y recibe tu pase digital de entrada al instante. Sin intermediarios ni papeles.</p>
+        <div class="hero-meta"><span><b>Check-in</b> desde 15:00</span><span><b>Check-out</b> hasta 12:00</span><span><b>Metro</b> L1 Pedro de Valdivia</span></div>
+        <a class="btn" href="#ofertas" id="go-offers">Ver ofertas disponibles</a>
+      </div>
+      <svg class="andes" viewBox="0 0 1200 110" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 110 L0 70 L90 40 L160 62 L250 18 L330 55 L420 30 L500 66 L590 12 L680 50 L760 28 L850 64 L940 22 L1030 58 L1110 36 L1200 60 L1200 110 Z" fill="rgba(255,255,255,.08)"/>
+        <path d="M0 110 L0 88 L120 66 L210 84 L320 58 L430 86 L540 62 L650 90 L760 70 L880 92 L990 68 L1100 88 L1200 76 L1200 110 Z" fill="var(--bg)"/>
+      </svg>
+    </section>
+
+    <section class="block" id="ofertas">
+      <div class="wrap">
+        <div class="sec-head">
+          <div><span class="eyebrow">Ofertas de la temporada</span><h2>Elige tu estadía</h2></div>
+          <p>Cada oferta tiene cupos limitados que el hotel controla en tiempo real. Si queda disponible, tu reserva queda confirmada al momento.</p>
+        </div>
+        <div class="offers" id="offers"></div>
+      </div>
+    </section>
+
+    <section class="block" style="padding-top:0">
+      <div class="wrap">
+        <div class="sec-head"><div><span class="eyebrow">Reserva segura</span><h2>Cómo cuidamos tu reserva</h2></div></div>
+        <div class="trust">
+          <div><b>Pase con firma digital</b><p>Tu código QR lleva una firma HMAC-SHA256 del hotel. Si alguien lo altera, recepción lo rechaza.</p></div>
+          <div><b>Cupos controlados</b><p>El sistema descuenta el cupo al confirmar. No se vende más de lo que el hotel tiene.</p></div>
+          <div><b>Entrada y salida registradas</b><p>Cada check-in y check-out queda en una bitácora encadenada que no se puede editar sin que se note.</p></div>
+          <div><b>Datos mínimos</b><p>Sólo pedimos lo necesario para recibirte: nombre, documento y correo.</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- PASE DEL HUÉSPED -->
+  <div id="v-pase" hidden>
+    <div class="wrap pass-wrap" id="pass-area"></div>
+  </div>
+
+  <!-- RECEPCIÓN -->
+  <div id="v-recepcion" hidden>
+    <div class="wrap gate" id="gate">
+      <form id="gate-form" autocomplete="off">
+        <div><span class="eyebrow">Acceso personal del hotel</span><h2 style="margin-top:4px">Recepción</h2></div>
+        <div class="field"><label for="pin">PIN de recepcionista</label><input id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></div>
+        <div class="err" id="pin-err"></div>
+        <button class="btn" type="submit">Entrar al panel</button>
+        <p class="hint">PIN de demostración: <b class="mono">2468</b>. En producción cada recepcionista entra con su propia cuenta.</p>
+      </form>
+    </div>
+
+    <div class="wrap panel" id="panel" hidden>
+      <div class="card-head">
+        <div><span class="eyebrow" id="today-lbl"></span><h2>Panel de recepción</h2></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="reset">Reiniciar demo</button><button class="btn ghost sm" id="logout">Cerrar turno</button></div>
+      </div>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h3>Validar pase</h3><span class="sub" style="color:var(--muted);font-size:.85rem">Pega el código o sube la foto del QR</span></div>
+          <div class="scan-row">
+            <input id="scan-in" placeholder="SHS1.…" aria-label="Código del pase">
+            <button class="btn sm" id="scan-go">Validar</button>
+            <label class="btn ghost sm file-btn">Foto del QR<input type="file" id="scan-file" accept="image/*"></label>
+          </div>
+          <div id="verdict"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Cupos por oferta</h3></div>
+          <div class="cupo-list" id="cupos"></div>
+          <form class="new-offer" id="new-offer">
+            <div class="field full"><label for="no-name">Nueva oferta</label><input id="no-name" placeholder="Ej: Fiestas Patrias" required></div>
+            <div class="field"><label for="no-price">Precio CLP</label><input id="no-price" type="number" min="1000" step="1000" placeholder="180000" required></div>
+            <div class="field"><label for="no-nights">Noches</label><input id="no-nights" type="number" min="1" max="14" value="2" required></div>
+            <div class="field"><label for="no-cupos">Cupos</label><input id="no-cupos" type="number" min="1" max="200" value="10" required></div>
+            <button class="btn sm" type="submit">Crear</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Pases emitidos</h3><span style="color:var(--muted);font-size:.85rem" id="tk-count"></span></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Huésped</th><th>Oferta</th><th>Fechas</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="tickets"></tbody>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Bitácora de entradas y salidas</h3><div style="display:flex;gap:10px;align-items:center"><span id="chain"></span><button class="btn ghost sm" id="verify-chain">Verificar integridad</button></div></div>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap"><span>SmartHotelOS · Demo comercial. Los datos de esta demostración quedan sólo en este navegador.</span><span>Grupo Smart de Administración</span></div></footer>
+
+<div class="sheet-bg" id="sheet" hidden>
+  <form class="sheet" id="book-form" autocomplete="off">
+    <div class="card-head"><div><span class="eyebrow">Reserva directa</span><h3 id="bk-title"></h3></div><button type="button" class="btn ghost sm" id="bk-close">Cerrar</button></div>
+    <div class="field"><label for="bk-name">Nombre completo</label><input id="bk-name" required placeholder="Camila Rojas"></div>
+    <div class="row2">
+      <div class="field"><label for="bk-doc">RUT o pasaporte</label><input id="bk-doc" required placeholder="12.345.678-5"></div>
+      <div class="field"><label for="bk-mail">Correo</label><input id="bk-mail" type="email" required placeholder="camila@correo.cl"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="bk-in">Llegada</label><input id="bk-in" type="date" required></div>
+      <div class="field"><label for="bk-guests">Huéspedes</label><select id="bk-guests"><option>1</option><option selected>2</option><option>3</option></select></div>
+    </div>
+    <div class="summary" id="bk-sum"></div>
+    <div class="err" id="bk-err"></div>
+    <button class="btn" type="submit" id="bk-go">Confirmar y emitir pase</button>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const KEY = 'smarthotel-demo-v1';
+  const CLP = n => '$' + Math.round(n).toLocaleString('es-CL');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const iso = d => d.toISOString().slice(0, 10);
+  const addDays = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return iso(d); };
+  const today = () => iso(new Date());
+  const fmtD = s => new Date(s + 'T12:00:00').toLocaleDateString('es-CL', { day: '2-digit', month: 'short' });
+  const enc = new TextEncoder();
+  const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  const sha = async s => hex(await crypto.subtle.digest('SHA-256', enc.encode(s)));
+  const STATUS = { emitido: 'Por llegar', dentro: 'En el hotel', salido: 'Salió', anulado: 'Anulado' };
+
+  let S;
+  let hmacKey;
+
+  function load() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  async function key() {
+    if (!hmacKey) hmacKey = await crypto.subtle.importKey('raw', enc.encode(S.secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    return hmacKey;
+  }
+  async function sign(payload) { return hex(await crypto.subtle.sign('HMAC', await key(), enc.encode(payload))).slice(0, 24); }
+  const payloadOf = t => [t.code, t.offerId, t.checkIn, t.checkOut, t.guests].join('.');
+  const tokenOf = t => 'SHS1.' + payloadOf(t) + '.' + t.sig;
+
+  async function addLog(action, code, detail) {
+    const prev = S.log.length ? S.log[S.log.length - 1].hash : 'GENESIS';
+    const e = { ts: new Date().toISOString(), action, code, detail: detail || '', by: 'Recepción', prev };
+    e.hash = await sha(prev + '|' + e.ts + '|' + e.action + '|' + e.code + '|' + e.detail);
+    S.log.push(e);
+  }
+  async function verifyChain() {
+    let prev = 'GENESIS';
+    for (const e of S.log) {
+      if (e.prev !== prev) return false;
+      if (await sha(prev + '|' + e.ts + '|' + e.action + '|' + e.code + '|' + e.detail) !== e.hash) return false;
+      prev = e.hash;
+    }
+    return true;
+  }
+  function newCode() {
+    const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; const r = crypto.getRandomValues(new Uint8Array(6));
+    return 'SH-' + [...r].map(x => a[x % a.length]).join('');
+  }
+
+  async function seed() {
+    const sec = new Uint8Array(32); crypto.getRandomValues(sec);
+    S = { secret: hex(sec), offers: [
+      { id: 'cordillera', tag: 'Más pedida', name: 'Escapada Cordillera', nights: 2, price: 389000, total: 12, desc: 'Suite con vista a los Andes, desayuno buffet y late check-out.', perks: ['Desayuno para dos', 'Late check-out 15:00', 'Estacionamiento'] },
+      { id: 'vinos', tag: 'Gastronomía', name: 'Ruta del Vino Maipo', nights: 2, price: 529000, total: 6, desc: 'Excursión a viña del Valle del Maipo con cata y almuerzo maridado.', perks: ['Traslado a la viña', 'Cata de 4 cepas', 'Cena de bienvenida'] },
+      { id: 'ejecutivo', tag: 'Negocios', name: 'Ejecutivo Providencia', nights: 1, price: 159000, total: 20, desc: 'Habitación superior, cowork del piso 12 y lavandería express.', perks: ['Cowork 24 h', 'Lavandería express', 'Check-in desde 12:00'] }
+    ], tickets: [], log: [] };
+    hmacKey = null;
+    const t0 = today();
+    const ex = [
+      ['Camila Rojas', '12.345.678-5', 'cordillera', t0, 'emitido'],
+      ['Matías Fuentes', '15.222.019-K', 'ejecutivo', addDays(t0, -1), 'dentro'],
+      ['Ana Müller', 'PA C4X91822', 'vinos', addDays(t0, -2), 'salido'],
+      ['Diego Soto', '18.904.331-2', 'cordillera', addDays(t0, 3), 'emitido']
+    ];
+    for (const [name, doc, offerId, ci, st] of ex) {
+      const o = S.offers.find(x => x.id === offerId);
+      const t = { code: newCode(), offerId, name, doc, email: name.split(' ')[0].toLowerCase() + '@ejemplo.cl', guests: 2, checkIn: ci, checkOut: addDays(ci, o.nights), status: 'emitido', example: true, createdAt: new Date().toISOString() };
+      t.sig = await sign(payloadOf(t));
+      S.tickets.push(t);
+      await addLog('Pase emitido', t.code, name);
+      if (st === 'dentro' || st === 'salido') { t.status = 'dentro'; await addLog('Entrada registrada', t.code, name); }
+      if (st === 'salido') { t.status = 'salido'; await addLog('Salida registrada', t.code, name); }
+    }
+    S.lastPass = S.tickets[0].code;
+    save();
+  }
+
+  const used = id => S.tickets.filter(t => t.offerId === id && t.status !== 'anulado').length;
+  const left = o => Math.max(0, o.total - used(o.id));
+  const offerName = id => (S.offers.find(o => o.id === id) || { name: id }).name;
+
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2600); }
+
+  /* ---------- VITRINA ---------- */
+  function renderOffers() {
+    $('#offers').innerHTML = S.offers.map(o => {
+      const l = left(o), pct = o.total ? (l / o.total) * 100 : 0;
+      return `<article class="offer">
+        <span class="tag">${esc(o.tag || 'Oferta')}</span>
+        <h3>${esc(o.name)}</h3>
+        <p>${esc(o.desc || '')}</p>
+        ${o.perks && o.perks.length ? `<ul>${o.perks.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : '<span></span>'}
+        <div class="price"><b class="num">${CLP(o.price)}</b><small>· ${o.nights} ${o.nights > 1 ? 'noches' : 'noche'}, IVA incluido</small></div>
+        <div class="cupo-bar"><span class="num">${l ? `Quedan <b>${l}</b> de ${o.total} cupos` : 'Sin cupos disponibles'}</span><div class="meter"><i class="${pct <= 25 ? 'low' : ''}" style="width:${pct}%"></i></div></div>
+        <button class="btn" data-book="${esc(o.id)}" ${l ? '' : 'disabled'}>${l ? 'Reservar' : 'Agotado'}</button>
+      </article>`;
+    }).join('');
+  }
+
+  let booking = null;
+  function openBook(id) {
+    booking = S.offers.find(o => o.id === id); if (!booking) return;
+    $('#bk-title').textContent = booking.name;
+    $('#bk-in').min = today(); $('#bk-in').value = addDays(today(), 7);
+    $('#bk-err').textContent = '';
+    updSum(); $('#sheet').hidden = false; $('#bk-name').focus();
+  }
+  function updSum() {
+    if (!booking) return; const ci = $('#bk-in').value || today();
+    $('#bk-sum').innerHTML = `<div><span>Fechas</span><b>${fmtD(ci)} → ${fmtD(addDays(ci, booking.nights))}</b></div>
+      <div><span>${booking.nights} ${booking.nights > 1 ? 'noches' : 'noche'} · ${$('#bk-guests').value} huésped(es)</span><b class="num">${CLP(booking.price)}</b></div>
+      <div><span>Cupos restantes</span><b class="num">${left(booking)}</b></div>`;
+  }
+
+  async function submitBook(ev) {
+    ev.preventDefault();
+    const name = $('#bk-name').value.trim(), doc = $('#bk-doc').value.trim(), email = $('#bk-mail').value.trim(), ci = $('#bk-in').value;
+    if (name.length < 3) return $('#bk-err').textContent = 'Escribe tu nombre completo.';
+    if (doc.length < 5) return $('#bk-err').textContent = 'Ingresa un RUT o pasaporte válido.';
+    if (!/^\S+@\S+\.\S+$/.test(email)) return $('#bk-err').textContent = 'Revisa el correo: falta @ o el dominio.';
+    if (!ci || ci < today()) return $('#bk-err').textContent = 'La llegada debe ser hoy o una fecha futura.';
+    if (!left(booking)) { renderOffers(); return $('#bk-err').textContent = 'Esta oferta se acaba de agotar. Elige otra.'; }
+    const t = { code: newCode(), offerId: booking.id, name, doc, email, guests: +$('#bk-guests').value, checkIn: ci, checkOut: addDays(ci, booking.nights), status: 'emitido', createdAt: new Date().toISOString() };
+    t.sig = await sign(payloadOf(t));
+    S.tickets.unshift(t); S.lastPass = t.code;
+    await addLog('Pase emitido', t.code, name);
+    save(); $('#sheet').hidden = true; $('#book-form').reset();
+    location.hash = 'pase'; toast('Reserva confirmada. Tu pase está listo.');
+  }
+
+  /* ---------- PASE ---------- */
+  function qrSvg(text) {
+    if (typeof qrcode === 'undefined') return `<span class="mono" style="font-size:.7rem;color:#17202B">QR no disponible sin conexión</span>`;
+    const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  }
+  function renderPass() {
+    const t = S.tickets.find(x => x.code === S.lastPass) || S.tickets[0];
+    const area = $('#pass-area');
+    if (!t) { area.innerHTML = `<div class="card" style="max-width:420px;text-align:center"><h3>Aún no tienes pase</h3><p style="color:var(--muted)">Reserva una oferta y tu pase de entrada aparecerá aquí.</p><a class="btn" href="#hotel">Ver ofertas</a></div>`; return; }
+    const tok = tokenOf(t);
+    area.innerHTML = `
+      <div style="text-align:center;display:grid;gap:6px"><span class="eyebrow">Pase de entrada y salida</span><h2>Muestra este QR en recepción</h2></div>
+      <div class="pass">
+        <div class="pass-head"><b>Hotel Smart Santiago</b><span class="pill st-${t.status}" style="background:var(--surface)">${STATUS[t.status]}</span></div>
+        <div class="pass-body">
+          <div class="qr">${qrSvg(tok)}</div>
+          <div style="text-align:center"><div class="eyebrow">Código de reserva</div><div class="mono" style="font-size:1.35rem;font-weight:600;letter-spacing:.06em">${t.code}</div></div>
+          <div class="perf"></div>
+          <dl>
+            <dt>Huésped</dt><dd>${esc(t.name)}</dd>
+            <dt>Oferta</dt><dd>${esc(offerName(t.offerId))}</dd>
+            <dt>Llegada</dt><dd>${fmtD(t.checkIn)} · desde 15:00</dd>
+            <dt>Salida</dt><dd>${fmtD(t.checkOut)} · hasta 12:00</dd>
+            <dt>Huéspedes</dt><dd>${t.guests}</dd>
+          </dl>
+          <div class="code-box"><code id="tok">${tok}</code><button class="btn ghost sm" id="copy-tok">Copiar</button></div>
+          <p style="font-size:.8rem;color:var(--muted)">La última parte del código es la firma digital del hotel. Cambiar cualquier dato invalida el pase.</p>
+        </div>
+      </div>
+      ${S.tickets.length > 1 ? `<label class="field" style="width:min(420px,100%)"><span style="font-size:.82rem;color:var(--muted);font-weight:600">Ver otro pase de esta demo</span><select id="pick-pass">${S.tickets.map(x => `<option value="${x.code}" ${x.code === t.code ? 'selected' : ''}>${x.code} · ${esc(x.name)}${x.example ? ' (ejemplo)' : ''}</option>`).join('')}</select></label>` : ''}
+      <a class="linkbtn" href="#recepcion">Probar como recepción →</a>`;
+  }
+
+  /* ---------- RECEPCIÓN ---------- */
+  let staff = false;
+  try { staff = sessionStorage.getItem(KEY + '-staff') === '1'; } catch (e) {}
+
+  function renderPanel() {
+    $('#gate').hidden = staff; $('#panel').hidden = !staff;
+    if (!staff) return;
+    $('#today-lbl').textContent = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+    const t0 = today(), act = S.tickets.filter(t => t.status !== 'anulado');
+    const arrivals = act.filter(t => t.status === 'emitido' && t.checkIn === t0).length;
+    const inside = act.filter(t => t.status === 'dentro').length;
+    const departures = act.filter(t => t.status === 'dentro' && t.checkOut <= t0).length;
+    const free = S.offers.reduce((a, o) => a + left(o), 0);
+    $('#kpis').innerHTML = [[arrivals, 'Llegadas esperadas hoy'], [inside, 'Huéspedes en el hotel'], [departures, 'Salidas pendientes hoy'], [free, 'Cupos libres en ofertas']]
+      .map(([n, l]) => `<div class="kpi"><b class="num">${n}</b><span>${l}</span></div>`).join('');
+
+    $('#cupos').innerHTML = S.offers.map(o => `<div class="cupo-item">
+        <div style="min-width:0"><b>${esc(o.name)}</b><div class="sub num" style="color:var(--muted);font-size:.82rem">${CLP(o.price)} · ${o.nights} n · ${used(o.id)} vendidos · ${left(o)} libres</div></div>
+        <div class="stepper" aria-label="Cupos totales de ${esc(o.name)}"><button data-cupo="${o.id}" data-d="-1" aria-label="Quitar cupo">−</button><span class="num">${o.total}</span><button data-cupo="${o.id}" data-d="1" aria-label="Agregar cupo">+</button></div>
+      </div>`).join('');
+
+    $('#tk-count').textContent = `${S.tickets.length} en total`;
+    $('#tickets').innerHTML = S.tickets.map(t => `<tr>
+        <td><b>${esc(t.name)}</b>${t.example ? ' <span class="sub">(ejemplo)</span>' : ''}<div class="sub mono">${t.code} · ${esc(t.doc)}</div></td>
+        <td>${esc(offerName(t.offerId))}</td>
+        <td class="num">${fmtD(t.checkIn)} → ${fmtD(t.checkOut)}</td>
+        <td><span class="pill st-${t.status}">${STATUS[t.status]}</span></td>
+        <td class="act">${t.status === 'emitido' ? `<button class="btn ok sm" data-act="in" data-code="${t.code}">Entrada</button> <button class="btn bad sm" data-act="void" data-code="${t.code}">Anular</button>` : t.status === 'dentro' ? `<button class="btn sm" data-act="out" data-code="${t.code}">Salida</button>` : ''}</td>
+      </tr>`).join('');
+
+    $('#log').innerHTML = S.log.slice().reverse().map(e => `<div><time>${new Date(e.ts).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</time><span><b>${esc(e.action)}</b> · <span class="mono">${esc(e.code)}</span> · ${esc(e.detail)}</span><code title="Huella SHA-256 del registro">${e.hash.slice(0, 8)}</code></div>`).join('') || '<p style="color:var(--muted)">Sin movimientos todavía.</p>';
+  }
+
+  async function validate(raw) {
+    const box = $('#verdict'); raw = (raw || '').trim();
+    if (!raw) { box.innerHTML = ''; return; }
+    const parts = raw.split('.');
+    const checks = [];
+    let t = null, sigOk = false;
+    if (parts.length === 7 && parts[0] === 'SHS1') {
+      const [, code, offerId, ci, co, guests, sig] = parts;
+      const expect = await sign([code, offerId, ci, co, guests].join('.'));
+      sigOk = expect === sig;
+      t = S.tickets.find(x => x.code === code);
+      checks.push([sigOk, sigOk ? 'Firma digital del hotel válida' : 'Firma inválida: el pase fue alterado o no lo emitió este hotel']);
+      checks.push([!!t, t ? 'Reserva encontrada en el sistema' : 'No existe una reserva con ese código']);
+      if (t && sigOk) checks.push([t.offerId === offerId && t.checkIn === ci && t.checkOut === co, 'Datos del pase coinciden con la reserva']);
+    } else {
+      t = S.tickets.find(x => x.code === raw.toUpperCase());
+      checks.push([false, 'Sólo código corto: sin firma digital. Pide el QR del huésped']);
+      checks.push([!!t, t ? 'Reserva encontrada (verifica documento de identidad)' : 'No existe una reserva con ese código']);
+    }
+    const ok = checks.every(c => c[0]) && t;
+    let actions = '', state = '';
+    if (t) {
+      state = `<span class="pill st-${t.status}">${STATUS[t.status]}</span>`;
+      const t0 = today();
+      if (t.status === 'emitido') {
+        const early = t.checkIn > t0;
+        checks.push([!early, early ? `Llega el ${fmtD(t.checkIn)}: aún no corresponde la entrada` : 'Fecha de llegada vigente']);
+        actions = `<button class="btn ok sm" data-act="in" data-code="${t.code}" ${checks.every(c => c[0]) ? '' : 'disabled'}>Registrar entrada</button>`;
+      } else if (t.status === 'dentro') actions = `<button class="btn sm" data-act="out" data-code="${t.code}" ${sigOk || ok ? '' : 'disabled'}>Registrar salida</button>`;
+      else if (t.status === 'salido') checks.push([false, 'Este pase ya se usó para salir. No permite reingreso']);
+      else checks.push([false, 'Pase anulado por el hotel']);
+    }
+    const good = checks.every(c => c[0]);
+    box.innerHTML = `<div class="verdict ${good ? 'good' : 'badv'}">
+      <div class="vt">${good ? 'Pase válido' : 'Revisar antes de dejar pasar'} ${state}</div>
+      ${t ? `<div style="font-size:.9rem"><b>${esc(t.name)}</b> · ${esc(t.doc)} · ${esc(offerName(t.offerId))} · ${fmtD(t.checkIn)} → ${fmtD(t.checkOut)}</div>` : ''}
+      <ul class="checks">${checks.map(c => `<li class="${c[0] ? '' : 'no'}">${c[1]}</li>`).join('')}</ul>
+      ${actions ? `<div class="actions">${actions}</div>` : ''}
+    </div>`;
+  }
+
+  async function act(kind, code) {
+    const t = S.tickets.find(x => x.code === code); if (!t) return;
+    if (kind === 'in' && t.status === 'emitido') { t.status = 'dentro'; await addLog('Entrada registrada', code, t.name); toast(`Entrada registrada: ${t.name}`); }
+    else if (kind === 'out' && t.status === 'dentro') { t.status = 'salido'; await addLog('Salida registrada', code, t.name); toast(`Salida registrada: ${t.name}`); }
+    else if (kind === 'void' && t.status === 'emitido') { t.status = 'anulado'; await addLog('Pase anulado', code, t.name + ' · cupo liberado'); toast('Pase anulado y cupo liberado'); }
+    else return;
+    save(); renderPanel(); renderOffers();
+    if ($('#scan-in').value.trim()) validate($('#scan-in').value);
+    $('#chain').innerHTML = '';
+  }
+
+  function decodeFile(file) {
+    if (!file) return;
+    if (typeof jsQR === 'undefined') { toast('El lector de QR no cargó. Pega el código.'); return; }
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const c = document.createElement('canvas'); const s = Math.min(1, 1200 / Math.max(img.width, img.height));
+      c.width = img.width * s; c.height = img.height * s;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      const r = jsQR(g.getImageData(0, 0, c.width, c.height).data, c.width, c.height);
+      URL.revokeObjectURL(url);
+      if (!r) { toast('No encontramos un QR en la foto. Acércate y evita reflejos.'); return; }
+      $('#scan-in').value = r.data; validate(r.data);
+    };
+    img.src = url;
+  }
+
+  /* ---------- ROUTER + EVENTOS ---------- */
+  const VIEWS = ['hotel', 'pase', 'recepcion'];
+  function route() {
+    let v = location.hash.slice(1); if (v === 'ofertas') v = 'hotel'; if (!VIEWS.includes(v)) v = 'hotel';
+    VIEWS.forEach(x => $('#v-' + x).hidden = x !== v);
+    document.querySelectorAll('.tabs a').forEach(a => a.dataset.v === v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+    if (v === 'hotel') renderOffers();
+    if (v === 'pase') renderPass();
+    if (v === 'recepcion') renderPanel();
+    if (location.hash === '#ofertas') setTimeout(() => $('#ofertas').scrollIntoView(), 0); else window.scrollTo(0, 0);
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-book]'); if (b) return openBook(b.dataset.book);
+    const a = e.target.closest('[data-act]'); if (a) return act(a.dataset.act, a.dataset.code);
+    const c = e.target.closest('[data-cupo]');
+    if (c) { const o = S.offers.find(x => x.id === c.dataset.cupo); const n = o.total + (+c.dataset.d);
+      if (n < used(o.id)) return toast(`No puedes bajar de ${used(o.id)}: ya hay pases vendidos`);
+      o.total = Math.max(0, n); save(); renderPanel(); return; }
+    if (e.target.id === 'copy-tok') { const txt = $('#tok').textContent;
+      navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast('Código copiado'), () => { getSelection().selectAllChildren($('#tok')); toast('Selecciona y copia el código'); }); }
+    if (e.target.id === 'go-offers') { e.preventDefault(); $('#ofertas').scrollIntoView({ behavior: 'smooth' }); }
+  });
+  document.addEventListener('change', e => { if (e.target.id === 'pick-pass') { S.lastPass = e.target.value; save(); renderPass(); } });
+  $('#bk-close').onclick = () => $('#sheet').hidden = true;
+  $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') $('#sheet').hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#sheet').hidden = true; });
+  $('#bk-in').addEventListener('input', updSum); $('#bk-guests').addEventListener('change', updSum);
+  $('#book-form').addEventListener('submit', submitBook);
+  $('#gate-form').addEventListener('submit', e => { e.preventDefault();
+    if ($('#pin').value === '2468') { staff = true; try { sessionStorage.setItem(KEY + '-staff', '1'); } catch (x) {} $('#pin').value = ''; $('#pin-err').textContent = ''; renderPanel(); }
+    else $('#pin-err').textContent = 'PIN incorrecto. En esta demo es 2468.'; });
+  $('#logout').onclick = () => { staff = false; try { sessionStorage.removeItem(KEY + '-staff'); } catch (x) {} renderPanel(); };
+  $('#reset').onclick = async () => { await seed(); $('#verdict').innerHTML = ''; $('#scan-in').value = ''; $('#chain').innerHTML = ''; renderPanel(); toast('Demo reiniciada con datos de ejemplo'); };
+  $('#scan-go').onclick = () => validate($('#scan-in').value);
+  $('#scan-in').addEventListener('keydown', e => { if (e.key === 'Enter') validate(e.target.value); });
+  $('#scan-file').addEventListener('change', e => { decodeFile(e.target.files[0]); e.target.value = ''; });
+  $('#verify-chain').onclick = async () => { const ok = await verifyChain();
+    $('#chain').innerHTML = ok ? `<span class="chain-ok">✓ ${S.log.length} registros íntegros</span>` : '<span class="chain-bad">✕ La bitácora fue modificada</span>'; };
+  $('#new-offer').addEventListener('submit', e => { e.preventDefault();
+    const name = $('#no-name').value.trim(); if (!name) return;
+    const id = name.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36).slice(-3);
+    S.offers.push({ id, tag: 'Nueva', name, price: +$('#no-price').value, nights: +$('#no-nights').value, total: +$('#no-cupos').value, desc: 'Oferta creada desde recepción.', perks: [] });
+    save(); e.target.reset(); $('#no-nights').value = 2; $('#no-cupos').value = 10; renderPanel(); toast(`Oferta "${name}" publicada en la vitrina`); });
+  window.addEventListener('hashchange', route);
+
+  (async () => { S = load(); if (!S || !S.secret) await seed(); route(); })();
+})();
+</script>
+</body>
+</html>
